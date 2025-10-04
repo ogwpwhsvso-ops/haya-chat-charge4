@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>شحن كونزات - صفحة الطلب</title>
+  <style>
+    :root{--bg:#f3f4f6;--card:#ffffff;--muted:#6b7280;--accent:#6b7280}
+    body{font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background:linear-gradient(180deg,#e9ecef, #f7f8fa); margin:0; padding:24px; color:#111}
+    .container{max-width:980px;margin:0 auto}
+    .card{background:var(--card);border-radius:12px;box-shadow:0 6px 20px rgba(15,23,42,0.06);padding:22px}
+    header{display:flex;gap:16px;align-items:center}
+    .logo{width:64px;height:64px;border-radius:10px;background:linear-gradient(135deg,#ddd,#cfcfcf);display:flex;align-items:center;justify-content:center;font-weight:700;color:#333}
+    h1{margin:0;font-size:20px}
+    p.lead{margin:6px 0 0;color:var(--muted)}
+    form{margin-top:18px;display:grid;grid-template-columns:1fr 320px;gap:16px}
+    .col{background:transparent}
+    label{display:block;margin-bottom:6px;font-size:13px}
+    input[type=text], select, input[type=number], textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #e6e7ea;background:#fff}
+    .small{font-size:13px;color:var(--muted)}
+    .packages{display:flex;flex-wrap:wrap;gap:8px}
+    .pkg{padding:10px 12px;border-radius:8px;border:1px solid #e6e7ea;background:#fafafa;cursor:pointer}
+    .pkg.selected{border-color:#444;background:#f0f0f0}
+    .actions{display:flex;gap:8px;align-items:center}
+    button{padding:10px 14px;border-radius:10px;border:0;cursor:pointer}
+    .btn-primary{background:#111;color:#fff}
+    .btn-outline{background:transparent;border:1px solid #c8c8c8}
+    .summary{border-radius:10px;padding:14px;border:1px dashed #e5e7eb}
+    .muted{color:var(--muted)}
+    footer{margin-top:14px;text-align:center;color:var(--muted);font-size:13px}
+    @media(max-width:880px){form{grid-template-columns:1fr;}.logo{display:none}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <header>
+        <div class="logo">Hiya</div>
+        <div>
+          <h1>صفحة شحن كونزات - Hiya Chat</h1>
+          <p class="lead">املأ بيانات الزبون، واختر كمية الكونزات وطريقة الدفع ثم أرسل الطلب عبر التلجرام للوكيل.</p>
+        </div>
+      </header>
+
+      <form id="orderForm" onsubmit="event.preventDefault(); sendOrder();">
+        <div class="col">
+          <label>أيدي الزبون / رقم الحساب</label>
+          <input type="text" id="userId" placeholder="ادخل الأيدي (مثال: 1431088950)" required />
+
+          <div style="margin-top:12px;">
+            <label>حزم سريعة (اضغط لاختيار)</label>
+            <div class="packages" id="packages">
+              <div class="pkg" data-value="5000">5,000 كونز</div>
+              <div class="pkg" data-value="10000">10,000 كونز</div>
+              <div class="pkg" data-value="50000">50,000 كونز</div>
+              <div class="pkg" data-value="100000">100,000 كونز</div>
+              <div class="pkg" data-value="500000">500,000 كونز</div>
+              <div class="pkg" data-value="1000000">1,000,000 كونز</div>
+              <div class="pkg" data-value="5000000">5,000,000 كونز</div>
+              <div class="pkg" data-value="custom">اخرى (حدد العدد)</div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px;">
+            <label>او: اكتب عدد الكونزات المطلوب</label>
+            <input type="number" id="customAmount" placeholder="مثال: 25000" min="1" />
+            <p class="small">نطاق الحزم الافتراضي من 5,000 إلى 5,000,000. يمكنك وضع قيمة أخرى يدوياً.</p>
+          </div>
+
+          <div style="margin-top:12px;">
+            <label>طريقة الدفع</label>
+            <select id="paymentMethod">
+              <option value="telegram">ارسال طلب عبر التليجرام (مفضل)</option>
+              <option value="bank">تحويل بنكي</option>
+              <option value="crypto">تحويل عملات رقمية</option>
+              <option value="cash">نقداً عند الاستلام</option>
+            </select>
+
+            <div id="paymentDetails" class="small muted" style="margin-top:8px">
+              اختر طريقة الدفع لعرض التفاصيل هنا.
+            </div>
+          </div>
+
+          <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+            <button class="btn-primary" type="submit">انشاء وارسال الطلب</button>
+            <button type="button" class="btn-outline" onclick="resetForm()">افراغ الحقول</button>
+          </div>
+
+          <div style="margin-top:14px;">
+            <label>ملاحظة للوكيل / تفاصيل إضافية</label>
+            <textarea id="note" rows="3" placeholder="مثال: تفعيل فوري بعد التحويل"></textarea>
+          </div>
+
+          <div style="margin-top:12px;">
+            <label>اضف ملف (اختياري)</label>
+            <input type="file" id="attachment" />
+            <p class="small muted">يمكن رفع اثبات الدفع هنا، سيقوم النظام باضافة ملخص الطلب إلى رسالة التلجرام.</p>
+          </div>
+
+        </div>
+
+        <aside class="col">
+          <div class="summary">
+            <h3>ملخص الطلب</h3>
+            <p><strong>أيدي:</strong> <span id="sumId">-</span></p>
+            <p><strong>الكمية:</strong> <span id="sumAmount">-</span></p>
+            <p><strong>الدفع:</strong> <span id="sumPayment">-</span></p>
+            <p><strong>السعر التقريبي:</strong> <span id="sumPrice">-</span></p>
+
+            <hr style="margin:10px 0" />
+            <p class="small muted">وكيل الشحن: <strong id="agentName">@agent_example</strong></p>
+            <p class="small muted">رقم الوكيل / تواصل: <strong id="agentPhone">+964 770 000 0000</strong></p>
+
+            <div style="margin-top:10px;display:flex;gap:8px">
+              <button class="btn-outline" onclick="copySummary()">نسخ ملخص</button>
+              <button class="btn-primary" onclick="openTelegram()">فتح التلجرام</button>
+            </div>
+
+            <p class="small muted" style="margin-top:10px">ملاحظة: الرابط يفتح نافذة مشاركة تلجرام مع رسالة جاهزة تحتوي على تفاصيل الطلب. تأكد من رفع إثبات الدفع لو كان متوفر.</p>
+          </div>
+        </aside>
+      </form>
+
+      <footer>
+        قالب صفحة شحن جاهز - عدل النصوص، أضف اسم الوكيل ورابط التلجرام ثم انشر على استضافة بسيطة (GitHub Pages أو أي استضافة).
+      </footer>
+
+    </div>
+  </div>
+
+<script>
+// تهيئة
+const packages = document.querySelectorAll('.pkg');
+let selectedValue = null;
+packages.forEach(p => p.addEventListener('click', ()=>{
+  packages.forEach(x=>x.classList.remove('selected'));
+  p.classList.add('selected');
+  selectedValue = p.dataset.value;
+  if(selectedValue === 'custom'){
+    document.getElementById('customAmount').focus();
+  } else {
+    document.getElementById('customAmount').value = '';
+  }
+  updateSummary();
+}));
+
+// تحديث تفاصيل الدفع
+const paymentMethod = document.getElementById('paymentMethod');
+paymentMethod.addEventListener('change', ()=>{
+  const val = paymentMethod.value;
+  const d = document.getElementById('paymentDetails');
+  if(val === 'bank') d.innerHTML = 'تفاصيل التحويل البنكي: بنك بغداد - رقم الحساب: 000-000-000';
+  else if(val === 'crypto') d.innerHTML = 'تفاصيل العملات: محفظة BTC: 1A2b...';
+  else if(val === 'cash') d.innerHTML = 'نقداً عند الاستلام - الاتفاق مع الوكيل مباشرة عبر التلجرام.';
+  else d.innerHTML = 'سيتم ارسال الطلب عبر التلجرام للوكيل، لا حاجة لتفاصيل الآن.';
+  updateSummary();
+});
+
+// تحديث الملخص
+function updateSummary(){
+  const id = document.getElementById('userId').value || '-';
+  const custom = document.getElementById('customAmount').value;
+  let amount = '-';
+  if(selectedValue && selectedValue !== 'custom') amount = Number(selectedValue).toLocaleString();
+  if(custom) amount = Number(custom).toLocaleString();
+  document.getElementById('sumId').innerText = id;
+  document.getElementById('sumAmount').innerText = amount;
+  document.getElementById('sumPayment').innerText = paymentMethod.options[paymentMethod.selectedIndex].text;
+  // حساب سعر تقريبي (مثال) — يمكنك تعديل المعامل حسب سعرك
+  if(amount !== '-'){
+    const num = Number((custom || selectedValue));
+    if(!isNaN(num)){
+      const price = Math.max(1, Math.round(num * 0.0005)); // معاملة سعرية تجريبية
+      document.getElementById('sumPrice').innerText = price.toLocaleString() + ' د.ع (تقديري)';
+    } else document.getElementById('sumPrice').innerText = '-';
+  } else document.getElementById('sumPrice').innerText = '-';
+}
+
+// ربط تحديثات
+['userId','customAmount','note'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', updateSummary);
+});
+
+// ارسال عبر التلجرام
+function sendOrder(){
+  const id = document.getElementById('userId').value.trim();
+  const custom = document.getElementById('customAmount').value.trim();
+  let amount = selectedValue;
+  if(custom) amount = custom;
+  if(!id){ alert('ادخل ايدي الزبون أولاً'); return; }
+  if(!amount || amount === 'custom'){ alert('حدد كمية الكونزات أو اكتبها يدوياً'); return; }
+
+  const payment = paymentMethod.value;
+  const note = document.getElementById('note').value.trim();
+  const agent = document.getElementById('agentName').innerText || '@agent_example';
+  const agentPhone = document.getElementById('agentPhone').innerText;
+
+  const message = `طلب شحن\nأيدي: ${id}\nكمية: ${Number(amount).toLocaleString()} كونز\nطريقة الدفع: ${paymentMethod.options[paymentMethod.selectedIndex].text}\nملاحظة: ${note}`;
+
+  // فتح نافذة مشاركة تلجرام
+  const tgShare = encodeURIComponent(message);
+  const telegramUrl = `https://t.me/share/url?url=&text=${tgShare}`;
+  window.open(telegramUrl, '_blank');
+}
+
+function openTelegram(){
+  sendOrder();
+}
+
+function copySummary(){
+  const id = document.getElementById('sumId').innerText;
+  const amount = document.getElementById('sumAmount').innerText;
+  const payment = document.getElementById('sumPayment').innerText;
+  const price = document.getElementById('sumPrice').innerText;
+  const text = `ملخص طلب:\nأيدي: ${id}\nكمية: ${amount}\nطريقة الدفع: ${payment}\nسعر تقريبي: ${price}`;
+  navigator.clipboard?.writeText(text).then(()=>{ alert('تم نسخ الملخص'); }).catch(()=>{ prompt('انسخ هذا الملخص يدوياً:', text); });
+}
+
+function resetForm(){
+  document.getElementById('orderForm').reset();
+  packages.forEach(x=>x.classList.remove('selected'));
+  selectedValue = null;
+  updateSummary();
+}
+
+// تهيئة أولية
+updateSummary();
+</script>
+</body>
+</html>
